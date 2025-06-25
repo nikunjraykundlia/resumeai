@@ -27,8 +27,27 @@ except Exception as e:
 # Load skills list
 try:
     skills_dataset_path = 'attached_assets/expanded_skills_with_web_app_and_database.csv'
-    skills_df = pd.read_csv(skills_dataset_path)
-    skills_list = [skill.lower() for skill in skills_df['skill'].tolist()]
+    # Load CSV with explicit UTF-8 encoding and error handling
+    try:
+        # Try with utf-8-sig first to handle BOM
+        skills_df = pd.read_csv(skills_dataset_path, encoding='utf-8-sig')
+        skills_list = [str(skill).strip().lower() for skill in skills_df['skill'].tolist() if pd.notna(skill)]
+    except UnicodeDecodeError:
+        try:
+            # Try with utf-8 if utf-8-sig fails
+            skills_df = pd.read_csv(skills_dataset_path, encoding='utf-8')
+            skills_list = [str(skill).strip().lower() for skill in skills_df['skill'].tolist() if pd.notna(skill)]
+        except UnicodeDecodeError:
+            try:
+                # Try with latin1 as a fallback
+                skills_df = pd.read_csv(skills_dataset_path, encoding='latin1')
+                skills_list = [str(skill).strip().lower() for skill in skills_df['skill'].tolist() if pd.notna(skill)]
+            except Exception as e:
+                logging.error(f"Error loading skills dataset with alternative encoding: {str(e)}")
+                skills_list = []
+    except Exception as e:
+        logging.error(f"Error loading skills dataset: {str(e)}")
+        skills_list = []
 except Exception as e:
     logging.error(f"Error loading skills dataset: {str(e)}")
     skills_list = []

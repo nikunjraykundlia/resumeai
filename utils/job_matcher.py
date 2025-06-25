@@ -35,8 +35,10 @@ def find_matching_jobs(resume_text, job_df, skills=None, top_n=5):
         resume_text = resume_text[:5000]
         
         # Extract data from DataFrame
-        job_titles = job_df['Job Title'].tolist()[:50]  # Limit to 50 jobs
-        job_descriptions = job_df['Job Description'].tolist()[:50]
+        # Normalize column names to match CSV
+        job_df.columns = job_df.columns.str.lower()
+        job_titles = job_df['job_title'].tolist()[:50]  # Limit to 50 jobs
+        job_descriptions = job_df['description'].tolist()[:50]
         
         # Extract or use provided skills
         skills = skills or extract_skills_from_text(resume_text)

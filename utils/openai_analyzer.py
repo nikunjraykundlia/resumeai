@@ -19,8 +19,8 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # Load job descriptions dataset
 try:
     job_data = pd.read_csv('attached_assets/job_title_des.csv')
-    job_titles = job_data['Job Title'].tolist()
-    job_descriptions = job_data['Job Description'].tolist()
+    job_titles = job_data['job_title'].tolist()
+    job_descriptions = job_data['description'].tolist()
     JOB_DATA_LOADED = True
 except Exception as e:
     logging.error(f"Error loading job data: {str(e)}")

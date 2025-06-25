@@ -1,0 +1,97 @@
+{% extends 'layout.html' %}
+
+{% block title %}Skills Assessment - ResumeAI{% endblock %}
+
+{% block current_page %}skills_test{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Progress Steps -->
+    <div class="progress-indicator mb-5">
+        <div class="progress-step" data-step="home">
+            <div class="step-circle completed">
+                <i class="bi bi-check"></i>
+            </div>
+            <div class="step-label">Upload</div>
+        </div>
+        <div class="progress-step" data-step="analysis">
+            <div class="step-circle completed">
+                <i class="bi bi-check"></i>
+            </div>
+            <div class="step-label">Analysis</div>
+        </div>
+        <div class="progress-step" data-step="skills_test">
+            <div class="step-circle active">
+                <i class="bi bi-check2-square"></i>
+            </div>
+            <div class="step-label">Skills Test</div>
+        </div>
+        <div class="progress-step" data-step="job_recommendations">
+            <div class="step-circle">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="step-label">Job Matches</div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-check2-square me-2"></i>
+                        Skills Assessment
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <div class="test-intro mb-4">
+                        <p>Based on your resume, we've identified the following skills:</p>
+                        
+                        <div class="mb-3">
+                            {% for skill in skills %}
+                                <span class="skill-badge">{{ skill }}</span>
+                            {% else %}
+                                <p class="text-muted">No skills detected. Try updating your resume with relevant skills.</p>
+                            {% endfor %}
+                        </div>
+                        
+                        <p>Take this quick assessment to verify your proficiency level in these skills. This will help us recommend the most suitable jobs for you.</p>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            The test consists of multiple-choice questions tailored to your skills. Your results will be used to provide more accurate job matches.
+                        </div>
+                    </div>
+                    
+                    <div id="test-progress" class="text-center mb-4 text-muted">
+                        Starting test...
+                    </div>
+                    
+                    <div id="skill-test-container">
+                        <div class="loading-container">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Preparing your assessment...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="{{ url_for('resume_analysis') }}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left"></i> Back to Analysis
+                </a>
+                <a href="{{ url_for('job_recommendations') }}" class="btn btn-outline-primary">
+                    Skip Assessment <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/skills_test.js') }}"></script>
+{% endblock %}

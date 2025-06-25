@@ -1,0 +1,176 @@
+{% extends 'layout.html' %}
+
+{% block title %}Cover Letter Generator{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <h1 class="mb-4">Generate a Cover Letter</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Resume Summary</h5>
+                        <p class="card-text">
+                            {% if resume_text %}
+                                {{ resume_text|truncate(500) }}
+                            {% else %}
+                                <em>No resume text available. Please upload a resume first.</em>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Skills</h5>
+                        <p class="card-text">
+                            {% if skills %}
+                                {% for skill in skills %}
+                                    <span class="badge bg-secondary me-1 mb-1">{{ skill }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <em>No skills detected.</em>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title">Generate a Custom Cover Letter</h5>
+                <form id="coverLetterForm" method="POST" action="{{ url_for('generate_cover_letter_endpoint') }}">
+                    <div class="mb-3">
+                        <label for="company" class="form-label">Company Name*</label>
+                        <input type="text" class="form-control" id="company" name="company" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">Job Title*</label>
+                        <input type="text" class="form-control" id="job_title" name="job_title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="job_description" class="form-label">Job Description*</label>
+                        <textarea class="form-control" id="job_description" name="job_description" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="generateButton">
+                        Generate Cover Letter
+                        <span class="spinner-border spinner-border-sm d-none" id="generateSpinner" role="status" aria-hidden="true"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow mt-4 d-none" id="resultCard">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Your Custom Cover Letter</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary me-2" id="copyButton">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" id="downloadButton">
+                            <i class="bi bi-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <textarea class="form-control" id="coverLetterText" rows="15" style="font-family: 'Times New Roman', Times, serif;"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('coverLetterForm');
+    const generateButton = document.getElementById('generateButton');
+    const generateSpinner = document.getElementById('generateSpinner');
+    const resultCard = document.getElementById('resultCard');
+    const coverLetterText = document.getElementById('coverLetterText');
+    const copyButton = document.getElementById('copyButton');
+    const downloadButton = document.getElementById('downloadButton');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        generateButton.disabled = true;
+        generateSpinner.classList.remove('d-none');
+        
+        // Get form data
+        const formData = new FormData(form);
+        const data = {
+            company: formData.get('company'),
+            job_title: formData.get('job_title'),
+            job_description: formData.get('job_description')
+        };
+        
+        // Send API request
+        fetch("{{ url_for('generate_cover_letter_endpoint') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Display the cover letter
+                coverLetterText.value = data.cover_letter;
+                resultCard.classList.remove('d-none');
+                
+                // Scroll to result
+                resultCard.scrollIntoView({behavior: 'smooth'});
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        })
+        .finally(() => {
+            // Reset loading state
+            generateButton.disabled = false;
+            generateSpinner.classList.add('d-none');
+        });
+    });
+    
+    // Copy button functionality
+    copyButton.addEventListener('click', function() {
+        coverLetterText.select();
+        document.execCommand('copy');
+        
+        // Show feedback
+        const originalText = copyButton.innerHTML;
+        copyButton.innerHTML = '<i class="bi bi-check"></i> Copied!';
+        setTimeout(() => {
+            copyButton.innerHTML = originalText;
+        }, 2000);
+    });
+    
+    // Download button functionality
+    downloadButton.addEventListener('click', function() {
+        const text = coverLetterText.value;
+        const filename = 'Cover_Letter.txt';
+        
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+        
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        
+        element.click();
+        
+        document.body.removeChild(element);
+    });
+});
+</script>
+{% endblock %}

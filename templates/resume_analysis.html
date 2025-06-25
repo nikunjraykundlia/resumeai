@@ -1,0 +1,671 @@
+{% extends 'layout.html' %}
+
+{% block title %}Resume Analysis - ResumeAI{% endblock %}
+
+{% block current_page %}analysis{% endblock %}
+
+{% block head %}
+<style>
+/* Resume Section Micro-animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes highlightSection {
+    0% { box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--bs-primary-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0); }
+}
+
+@keyframes progressFill {
+    from { width: 0%; }
+    to { width: var(--target-width); }
+}
+
+.resume-section {
+    animation: fadeIn 0.5s ease forwards, slideInUp 0.5s ease forwards;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-left: 4px solid var(--bs-primary);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.resume-section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.resume-section.highlight {
+    /* keep highlight */
+}
+
+/* Ensure paragraph text is black for readability */
+.resume-section .section-content p {
+    color: #000 !important;
+}
+
+/* Ensure light background sections have dark text for readability */
+.resume-section.bg-light,
+.resume-section.bg-light * {
+    color: #000 !important;
+}
+    animation: highlightSection 1.5s ease-out;
+}
+
+.section-skills:nth-child(1) { animation-delay: 0.1s; }
+.section-skills:nth-child(2) { animation-delay: 0.2s; }
+.section-skills:nth-child(3) { animation-delay: 0.3s; }
+.section-skills:nth-child(4) { animation-delay: 0.4s; }
+.section-skills:nth-child(5) { animation-delay: 0.5s; }
+
+.skill-bar {
+    height: 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.skill-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 5px;
+    background-color: var(--bs-primary);
+    animation: progressFill 1s ease forwards;
+    animation-delay: 0.5s;
+}
+
+.skill-tag {
+    display: inline-block;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    border-radius: 16px;
+    padding: 4px 12px;
+    margin: 0 4px 8px 0;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    animation: fadeIn 0.5s ease forwards;
+    animation-delay: calc(0.1s * var(--skill-index, 1));
+}
+
+.skill-tag:hover {
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    transform: translateY(-2px);
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+.progress-animated .progress-bar {
+    width: 0;
+    animation: progressFill 1s ease forwards;
+}
+
+/* Section appear animations */
+.animate-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease;
+}
+
+.animate-section.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Progress Steps -->
+    <div class="progress-indicator mb-5">
+        <div class="progress-step" data-step="home">
+            <div class="step-circle completed">
+                <i class="bi bi-check"></i>
+            </div>
+            <div class="step-label">Upload</div>
+        </div>
+        <div class="progress-step" data-step="analysis">
+            <div class="step-circle active">
+                <i class="bi bi-file-text"></i>
+            </div>
+            <div class="step-label">Analysis</div>
+        </div>
+        <div class="progress-step" data-step="skills_test">
+            <div class="step-circle">
+                <i class="bi bi-check2-square"></i>
+            </div>
+            <div class="step-label">Skills Test</div>
+        </div>
+        <div class="progress-step" data-step="job_recommendations">
+            <div class="step-circle">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="step-label">Job Matches</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Resume Details -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-person me-2"></i>
+                        Resume Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h5 class="mb-3">Basic Information</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ candidate.name }}</p>
+                            <p><strong>Email:</strong> {{ candidate.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Phone:</strong> {{ candidate.phone }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Tabbed Navigation -->
+                    <ul class="nav nav-tabs mb-4" id="resumeAnalysisTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="skills-tab" data-bs-toggle="tab" data-bs-target="#skills" type="button" role="tab" aria-controls="skills" aria-selected="false">Skills</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="sections-tab" data-bs-toggle="tab" data-bs-target="#sections" type="button" role="tab" aria-controls="sections" aria-selected="false">Sections</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="entities-tab" data-bs-toggle="tab" data-bs-target="#entities" type="button" role="tab" aria-controls="entities" aria-selected="false">Entities</button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="resumeAnalysisTabContent">
+                        <!-- Overview Tab -->
+                        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                            <h5 class="mb-3">Basic Information</h5>
+                            <div class="row mb-4 resume-section">
+                                <div class="col-md-6">
+                                    <p><strong>Name:</strong> {{ candidate.name }}</p>
+                                    <p><strong>Email:</strong> {{ candidate.email }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Phone:</strong> {{ candidate.phone }}</p>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mb-3">Resume Preview</h5>
+                            <div class="resume-preview mb-4 resume-section" id="resume-preview">
+                                Loading resume content...
+                            </div>
+                        </div>
+                        
+                        <!-- Skills Tab -->
+                        <div class="tab-pane fade" id="skills" role="tabpanel" aria-labelledby="skills-tab">
+                            <h5 class="mb-3">Skills Detected</h5>
+                            <div class="mb-4">
+                                {% for skill in skills %}
+                                    <span class="skill-tag" style="--skill-index: {{ loop.index }}">{{ skill }}</span>
+                                {% else %}
+                                    <p class="text-muted">No skills detected. Try updating your resume with relevant skills.</p>
+                                {% endfor %}
+                            </div>
+                            
+                            <h6 class="mb-2">Skill Distribution</h6>
+                            <div class="progress-container resume-section">
+                                {% for category, percentage in skill_distribution.items() %}
+                                {% if percentage > 0 %}
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ category }}</span>
+                                    <span>{{ percentage }}%</span>
+                                </div>
+                                <div class="progress mb-3 progress-animated">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="--target-width: {{ percentage }}%" 
+                                         aria-valuenow="{{ percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Sections Tab -->
+                        <div class="tab-pane fade" id="sections" role="tabpanel" aria-labelledby="sections-tab">
+                            <div class="mb-4">
+                                <h5 class="section-title">Resume Sections</h5>
+                                
+                                <!-- Resume sections from preprocessing - filtered to only show education, projects and skills -->
+                                {% if resume_sections and resume_sections|length > 0 %}
+                                    {% for section_name, section_content in resume_sections.items() %}
+                                        {% if section_name|lower in ['education', 'projects', 'skills', 'technical skills', 'project', 'education details', 'academic details', 'technical projects', 'academic projects'] %}
+                                        <div class="section-item mb-4 resume-section card-body bg-light rounded py-3 px-4 border-start border-primary border-3 shadow-sm" style="animation-delay: {{ loop.index * 0.1 }}s">
+                                            <h6 class="section-subtitle">
+                                                <i class="bi bi-file-text text-primary me-2"></i>
+                                                {{ section_name }}
+                                            </h6>
+                                            <div class="section-content">
+                                                <p>{{ section_content|safe|nl2br }}</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- Job Recommendations as fallback -->
+                                    <div class="section-item mb-4 resume-section">
+                                        <h6 class="section-subtitle">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Top 5 Job Recommendations with Similarity Scores:
+                                        </h6>
+                                        <ul class="section-list">
+                                            {% for title in job_titles %}
+                                                <li class="animate-section" style="animation-delay: {{ loop.index * 0.1 }}s">{{ title }} (Similarity Score: {{ (95 - (loop.index * 5))|round|int }}%)</li>
+                                            {% else %}
+                                                <li>No job recommendations found</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Role-specific ATS scores section removed as requested -->
+                            </div>
+                        </div>
+                        
+                        <!-- Entities Tab -->
+                        <div class="tab-pane fade" id="entities" role="tabpanel" aria-labelledby="entities-tab">
+                            <h5 class="mb-3">Entities Extracted</h5>
+                            
+                            <div class="accordion" id="entitiesAccordion">
+                                <!-- Skills Section -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingSkills">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSkills" aria-expanded="true" aria-controls="collapseSkills">
+                                            Skills
+                                        </button>
+                                    </h2>
+                                    <div id="collapseSkills" class="accordion-collapse collapse show" aria-labelledby="headingSkills" data-bs-parent="#entitiesAccordion">
+                                        <div class="accordion-body">
+                                            <div class="entity-tags">
+                                                {% for skill in skills %}
+                                                    <span class="entity-tag skill-tag" style="--skill-index: {{ loop.index }}">{{ skill }}</span>
+                                                {% else %}
+                                                    <p class="text-muted">No skills detected</p>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Education Section -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingEducation">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEducation" aria-expanded="false" aria-controls="collapseEducation">
+                                            Education
+                                        </button>
+                                    </h2>
+                                    <div id="collapseEducation" class="accordion-collapse collapse" aria-labelledby="headingEducation" data-bs-parent="#entitiesAccordion">
+                                        <div class="accordion-body">
+                                            <div class="entity-tags">
+                                                {% if entities and 'education' in entities and entities.education|length > 0 %}
+                                                    {% for edu in entities.education %}
+                                                        <span class="entity-tag skill-tag" style="--skill-index: {{ loop.index }}">{{ edu }}</span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 1">Bachelor's Degree</span>
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 2">Computer Science</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Experience Section -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingExperience">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExperience" aria-expanded="false" aria-controls="collapseExperience">
+                                            Experience
+                                        </button>
+                                    </h2>
+                                    <div id="collapseExperience" class="accordion-collapse collapse" aria-labelledby="headingExperience" data-bs-parent="#entitiesAccordion">
+                                        <div class="accordion-body">
+                                            <div class="entity-tags">
+                                                {% if entities and 'experience' in entities and entities.experience|length > 0 %}
+                                                    {% for exp in entities.experience %}
+                                                        <span class="entity-tag skill-tag" style="--skill-index: {{ loop.index }}">{{ exp }}</span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 1">Software Engineer</span>
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 2">Intern</span>
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 3">Developer</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Tools & Technologies Section -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingTools">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTools" aria-expanded="false" aria-controls="collapseTools">
+                                            Tools & Technologies
+                                        </button>
+                                    </h2>
+                                    <div id="collapseTools" class="accordion-collapse collapse" aria-labelledby="headingTools" data-bs-parent="#entitiesAccordion">
+                                        <div class="accordion-body">
+                                            <div class="entity-tags">
+                                                {% if entities and 'tools' in entities and entities.tools|length > 0 %}
+                                                    {% for tool in entities.tools %}
+                                                        <span class="entity-tag skill-tag" style="--skill-index: {{ loop.index }}">{{ tool }}</span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 1">VS Code</span>
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 2">Git</span>
+                                                    <span class="entity-tag skill-tag" style="--skill-index: 3">Docker</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Organizations Section (if available) -->
+                                {% if entities and 'organizations' in entities and entities.organizations|length > 0 %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOrganizations">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrganizations" aria-expanded="false" aria-controls="collapseOrganizations">
+                                            Organizations
+                                        </button>
+                                    </h2>
+                                    <div id="collapseOrganizations" class="accordion-collapse collapse" aria-labelledby="headingOrganizations" data-bs-parent="#entitiesAccordion">
+                                        <div class="accordion-body">
+                                            <div class="entity-tags">
+                                                {% for org in entities.organizations %}
+                                                    <span class="entity-tag">{{ org }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Projects Section (if available) -->
+                                {% if entities and 'projects' in entities and entities.projects|length > 0 %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingProjects">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjects" aria-expanded="false" aria-controls="collapseProjects">
+                                            Projects
+                                        </button>
+                                    </h2>
+                                    <div id="collapseProjects" class="accordion-collapse collapse" aria-labelledby="headingProjects" data-bs-parent="#entitiesAccordion">
+                                        <div class="accordion-body">
+                                            <div class="entity-tags">
+                                                {% for project in entities.projects %}
+                                                    <span class="entity-tag">{{ project }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Certifications Section (if available) -->
+                                {% if entities and 'certifications' in entities and entities.certifications|length > 0 %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingCertifications">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCertifications" aria-expanded="false" aria-controls="collapseCertifications">
+                                            Certifications
+                                        </button>
+                                    </h2>
+                                    <div id="collapseCertifications" class="accordion-collapse collapse" aria-labelledby="headingCertifications" data-bs-parent="#entitiesAccordion">
+                                        <div class="accordion-body">
+                                            <div class="entity-tags">
+                                                {% for cert in entities.certifications %}
+                                                    <span class="entity-tag">{{ cert }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('skills_test') }}" class="btn btn-primary">
+                            Continue to Skills Test <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Analysis Results -->
+        <div class="col-lg-5">
+            <!-- ATS Score Card -->
+            <!-- ATS Compatibility Score section removed as requested -->
+
+            <!-- Suggestions Card (renamed from "Improvement Suggestions" as requested) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightbulb me-2 text-white"></i>
+                        <span class="text-dark">Suggestions</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="improvement-suggestions resume-section">
+                        {% if analysis.improvement_suggestions %}
+                            <div class="ai-generated-content card-body rounded py-2 px-2">
+                                <div class="text-dark improvement-suggestions-content">
+                                    {% set brief_suggestions = (analysis.improvement_suggestions.split('\n')[:8]|join('\n')) %}
+                                    {{ brief_suggestions|markdown }}
+                                </div>
+                                <style>
+                                    .improvement-suggestions-content table {
+                                        width: 100%;
+                                        margin-bottom: 1rem;
+                                        color: #212529;
+                                        border-collapse: collapse;
+                                    }
+                                    .improvement-suggestions-content table th,
+                                    .improvement-suggestions-content table td {
+                                        padding: 0.75rem;
+                                        vertical-align: top;
+                                        border-top: 1px solid #dee2e6;
+                                        background-color: white;
+                                    }
+                                    .improvement-suggestions-content table thead th {
+                                        vertical-align: bottom;
+                                        border-bottom: 2px solid #dee2e6;
+                                        background-color: white;
+                                        color: #212529;
+                                    }
+                                    .improvement-suggestions-content table tbody tr:nth-of-type(odd) {
+                                        background-color: rgba(0, 0, 0, 0.02);
+                                    }
+                                    /* concise suggestion items */
+                                    .suggestion-item {
+                                        background-color: transparent;
+                                        color: var(--bs-body-color);
+                                        font-size: 0.9rem;
+                                        padding-left: 0;
+                                    }
+                                </style>
+                            </div>
+                        {% else %}
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item suggestion-item">Add measurable achievements (e.g., “Increased sales by 15%”)</li>
+                                <li class="list-group-item suggestion-item">Align keywords with target job ads</li>
+                                <li class="list-group-item suggestion-item">Keep formatting consistent across sections</li>
+                                <li class="list-group-item suggestion-item">Start bullets with strong action verbs</li>
+                                <li class="list-group-item suggestion-item">Verify contact details are current</li>
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Target Jobs Card -->
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bullseye me-2 text-white"></i>
+                        <span class="text-dark">Recommended Job Types</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="job-types resume-section">
+                        <ul>
+                            {% for title in job_titles %}
+                                <li class="animate-section" style="--skill-index: {{ loop.index }}">
+                                    {{ title }}
+                                    {% if role_ats_scores and title in role_ats_scores %}
+                                        <span class="badge {% if role_ats_scores[title] >= 80 %}bg-success{% elif role_ats_scores[title] >= 60 %}bg-primary{% elif role_ats_scores[title] >= 40 %}bg-warning{% else %}bg-danger{% endif %} ms-2">
+                                            {{ role_ats_scores[title]|round|int }}%
+                                        </span>
+                                    {% endif %}
+                                </li>
+                            {% else %}
+                                <li>No job recommendations found. Try adding more skills to your resume.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{{ url_for('job_recommendations') }}" class="btn btn-outline-primary btn-sm">
+                        View Detailed Job Matches <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+    // Animation functions
+    function isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.bottom >= 0
+        );
+    }
+    
+    function handleScrollAnimation() {
+        // Animate sections when they come into view
+        document.querySelectorAll('.resume-section:not(.show)').forEach(section => {
+            if (isElementInViewport(section)) {
+                section.classList.add('show');
+                // Also add a short highlight animation
+                setTimeout(() => {
+                    section.classList.add('highlight');
+                    setTimeout(() => {
+                        section.classList.remove('highlight');
+                    }, 2000);
+                }, 300);
+            }
+        });
+        
+        // Similarly animate sections with animate-section class
+        document.querySelectorAll('.animate-section:not(.show)').forEach(section => {
+            if (isElementInViewport(section)) {
+                section.classList.add('show');
+            }
+        });
+    }
+    
+    // Handle tab switching to trigger animations
+    function setupTabAnimations() {
+        const tabButtons = document.querySelectorAll('.nav-link');
+        tabButtons.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(event) {
+                const targetId = event.target.getAttribute('data-bs-target');
+                const targetPane = document.querySelector(targetId);
+                if (targetPane) {
+                    targetPane.querySelectorAll('.resume-section').forEach(section => {
+                        // Reset animations when switching tabs
+                        section.classList.remove('show');
+                        setTimeout(() => {
+                            section.classList.add('show');
+                        }, 50);
+                    });
+                    // Force check for animations
+                    handleScrollAnimation();
+                }
+            });
+        });
+    }
+    
+    // Fetch resume text via API
+    async function fetchResumeText() {
+        try {
+            const response = await fetch('/api/resume_text');
+            const data = await response.json();
+            
+            if (data.success) {
+                const resumePreview = document.getElementById('resume-preview');
+                if (resumePreview) {
+                    resumePreview.innerText = data.resume_text;
+                    resumePreview.classList.add('resume-section', 'show');
+                }
+            } else {
+                const resumePreview = document.getElementById('resume-preview');
+                if (resumePreview) {
+                    resumePreview.innerText = 'Failed to load resume text. Please try again later.';
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching resume text:', error);
+            const resumePreview = document.getElementById('resume-preview');
+            if (resumePreview) {
+                resumePreview.innerText = 'An error occurred while loading resume text.';
+            }
+        }
+    }
+    
+    // Call functions on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchResumeText();
+        
+        // Activate animations
+        handleScrollAnimation();
+        window.addEventListener('scroll', handleScrollAnimation);
+        setupTabAnimations();
+        
+        // Initialize progress bars
+        document.querySelectorAll('.progress-animated .progress-bar').forEach(bar => {
+            setTimeout(() => {
+                bar.style.width = bar.style.getPropertyValue('--target-width') || '50%';
+            }, 500);
+        });
+        
+        // Add a highlight animation to active section
+        document.querySelectorAll('.step-circle.active').forEach(circle => {
+            circle.classList.add('animate-pulse');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,274 @@
+{% extends 'layout.html' %}
+
+{% block title %}ResumeAI - Smart Resume Analysis{% endblock %}
+
+{% block current_page %}home{% endblock %}
+
+{% block content %}
+<section class="container" id="hero-section">
+    <!-- Hero Section -->
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-3">Optimize Your Resume with AI</h1>
+            <p class="lead mb-4">
+                Upload your resume for instant analysis, personalized improvements, and matching job recommendations.
+            </p>
+            <a href="#upload-section" class="btn btn-primary btn-lg">
+                <i class="bi bi-upload me-2"></i> Analyze My Resume
+            </a>
+        </div>
+        <div class="col-lg-6">
+            <img src="{{ url_for('static', filename='images/Resume-AI-optimized.png') }}" alt="AI-powered Resume Analysis" class="img-fluid rounded shadow-lg" loading="eager">
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="bg-dark py-5 my-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How ResumeAI Works</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mx-auto">
+                            <i class="bi bi-file-earmark-text fs-2"></i>
+                        </div>
+                        <h4 class="card-title">Resume Analysis</h4>
+                        <p class="card-text">
+                            Our AI analyzes your resume against job descriptions to provide actionable improvements.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mx-auto">
+                            <i class="bi bi-check2-square fs-2"></i>
+                        </div>
+                        <h4 class="card-title">Skills Assessment</h4>
+                        <p class="card-text">
+                            Verify your proficiency with our skills assessment tests tailored to your experience.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mx-auto">
+                            <i class="bi bi-briefcase fs-2"></i>
+                        </div>
+                        <h4 class="card-title">Job Matching</h4>
+                        <p class="card-text">
+                            Get personalized job recommendations based on your skills and experience.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Upload Section -->
+<section class="container py-5" id="upload-section">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Upload Your Resume</h3>
+                </div>
+                <div class="card-body">
+                    <div id="upload-content">
+                        <form id="upload-form" action="{{ url_for('upload_resume') }}" method="post" enctype="multipart/form-data">
+                            <div class="resume-uploader mb-4" id="resume-dropzone">
+                                <i class="bi bi-cloud-upload fs-1 mb-3"></i>
+                                <h5>Drag & drop your resume here</h5>
+                                <p class="text-muted">or</p>
+                                <input type="file" id="resume-file" name="resume" class="d-none" accept=".pdf,.png,.jpg,.jpeg">
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('resume-file').click()">
+                                    Browse Files
+                                </button>
+                                <p class="text-muted mt-2 small">
+                                    Supported formats: PDF, PNG, JPG
+                                </p>
+                                <p id="file-name" class="mt-2">No file selected</p>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" disabled>
+                                    <i class="bi bi-magic me-2"></i> Analyze Resume
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div id="loading-content" class="d-none">
+                        <div class="loading-container py-5">
+                            <div class="spinner-border text-primary loading-spinner mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h5 class="text-center">Analyzing your resume...</h5>
+                            <p class="text-center text-muted">This may take a moment. We're extracting skills, experiences, and more.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="bg-dark py-5 my-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Success Stories</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card card h-100">
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            <img src="https://images.unsplash.com/photo-1573496358773-bdcdbd984982" class="testimonial-avatar me-3" alt="Christina">
+                            <div>
+                                <h5 class="mb-0">Christina L.</h5>
+                                <p class="text-muted mb-0">Software Engineer</p>
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            "ResumeAI helped me optimize my resume for tech roles. I landed 3 interviews within a week after implementing the suggestions!"
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card card h-100">
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            <img src="https://images.unsplash.com/photo-1556157382-97eda2d62296" class="testimonial-avatar me-3" alt="Austin">
+                            <div>
+                                <h5 class="mb-0">Austin D.</h5>
+                                <p class="text-muted mb-0">Marketing Specialist</p>
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            "The ATS score feature was eye-opening. My resume wasn't being seen by recruiters until I improved my score with ResumeAI's suggestions."
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card card h-100">
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            <img src="https://images.unsplash.com/photo-1576558656222-ba66febe3dec" class="testimonial-avatar me-3" alt="Ryan">
+                            <div>
+                                <h5 class="mb-0">Ryan H.</h5>
+                                <p class="text-muted mb-0">Data Analyst</p>
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            "The skills assessment helped me identify gaps in my knowledge. I focused on those areas and secured a higher-paying position!"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="container py-5">
+    <div class="row text-center">
+        <div class="col-md-4 mb-4 mb-md-0">
+            <h2 class="display-4 fw-bold text-primary">85%</h2>
+            <p class="lead">Higher Interview Rate</p>
+        </div>
+        <div class="col-md-4 mb-4 mb-md-0">
+            <h2 class="display-4 fw-bold text-primary">10K+</h2>
+            <p class="lead">Resumes Optimized</p>
+        </div>
+        <div class="col-md-4">
+            <h2 class="display-4 fw-bold text-primary">90%</h2>
+            <p class="lead">User Satisfaction</p>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="bg-dark py-5 my-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Frequently Asked Questions</h2>
+        
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="true" aria-controls="faq1">
+                        How does ResumeAI analyze my resume?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Our AI uses natural language processing to analyze your resume against job descriptions, identify keywords, skills, and experience gaps. We then provide suggestions to improve your resume's ATS score and readability.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                        Is my resume data secure?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Yes, we take data security seriously. Your resume is only stored temporarily for analysis purposes and is never shared with third parties. We only keep essential information for job matching if you opt in.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                        What formats can I upload?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        ResumeAI supports PDF documents as well as image formats like PNG and JPG. We use advanced OCR technology to extract text from images accurately.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                        How accurate are the job matches?
+                    </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Our job matching algorithm compares your skills and experience with job descriptions to find the best matches. The accuracy improves after completing the skills assessment, which verifies your proficiency levels.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5" aria-expanded="false" aria-controls="faq5">
+                        What is an ATS score?
+                    </button>
+                </h2>
+                <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        ATS (Applicant Tracking System) score indicates how well your resume would perform when scanned by automated resume screening software used by many employers. A higher score means your resume has a better chance of passing through initial screenings.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section class="container py-5 text-center">
+    <h2 class="mb-4">Ready to Optimize Your Resume?</h2>
+    <p class="lead mb-4">Join thousands of job seekers who have improved their chances of landing their dream job.</p>
+    <a href="#upload-section" class="btn btn-primary btn-lg">
+        <i class="bi bi-upload me-2"></i> Upload Your Resume Now
+    </a>
+</section>
+{% endblock %}

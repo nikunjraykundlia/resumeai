@@ -1,0 +1,184 @@
+{% extends 'layout.html' %}
+
+{% block title %}Resume Analyzer{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Resume Analysis & Improvement</h1>
+        <p class="hero-subtitle">Upload your resume, get instant insights, and find out how to make it better matched for your target job.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <form id="resumeForm" enctype="multipart/form-data">
+                        <div class="row g-3">
+                            <!-- Resume Upload Section -->
+                            <div class="col-md-12 text-center">
+                                <label for="resumeFile" class="form-label">Upload Your Resume</label>
+                                <div class="upload-area">
+                                    <input class="form-control visually-hidden" type="file" id="resumeFile" accept=".pdf,.png,.jpg,.jpeg">
+                                    <label for="resumeFile" class="btn btn-primary mb-3" id="uploadBtn">
+                                        <i class="fas fa-upload me-2"></i>Choose File
+                                    </label>
+                                    <div id="fileName" class="file-name">No file selected</div>
+                                </div>
+                                <div class="form-text">PDF, PNG, and JPG formats supported.</div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="col-12 mt-3 text-center">
+                                <button type="submit" class="btn btn-success px-4 py-2" id="analyzeBtn" disabled>
+                                    <i class="fas fa-search me-2"></i>Analyze Resume
+                                </button>
+
+                                <div id="loadingSpinner" class="spinner-border text-primary d-none mx-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Container for Messages -->
+        <div id="alertContainer" class="col-12"></div>
+
+        <!-- Results Section (Hidden initially) -->
+        <div id="resultsSection" class="d-none">
+            <h2 class="text-center mb-4">Analysis Results</h2>
+
+            <!-- Tabs for different result sections -->
+            <ul class="nav nav-tabs mb-4" id="resultsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="skills-tab" data-bs-toggle="tab" data-bs-target="#skills" type="button" role="tab" aria-controls="skills" aria-selected="false">Skills</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sections-tab" data-bs-toggle="tab" data-bs-target="#sections" type="button" role="tab" aria-controls="sections" aria-selected="false">Sections</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="entities-tab" data-bs-toggle="tab" data-bs-target="#entities" type="button" role="tab" aria-controls="entities" aria-selected="false">Entities</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="resultsTabContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Extracted Resume Text</h5>
+                                </div>
+                                <div class="card-body">
+                                    <pre id="resumeText" class="mb-0"></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100" id="scoreContainer">
+                                <!-- Score content will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Tab -->
+                <div class="tab-pane fade" id="skills" role="tabpanel" aria-labelledby="skills-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Extracted Skills</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="skillsContainer" class="p-3">
+                                <!-- Skills content will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sections Tab -->
+                <div class="tab-pane fade" id="sections" role="tabpanel" aria-labelledby="sections-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Resume Sections</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="sectionsContainer">
+                                <!-- Sections content will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entities Tab -->
+                <div class="tab-pane fade" id="entities" role="tabpanel" aria-labelledby="entities-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Extracted Entities</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="entitiesContainer">
+                                <!-- Entities content will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suggestions Tab -->
+                <div class="tab-pane fade" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
+                    <div id="suggestionsContainer">
+                        <!-- Suggestions content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="mt-5 pt-3">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">About Advanced Resume Analyzer</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>How It Works</h4>
+                        <ol>
+                            <li>Upload your resume in PDF, JPG or PNG format</li>
+                            <li>Our AI analyzes your resume using Natural Language Processing</li>
+                            <li>View the top 5 job roles that best match your skills and experience</li>
+                            <li>See detailed insights about your resume's sections, skills, and key entities</li>
+                            <li>Get your role-specific ATS score to understand resume compatibility</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Features</h4>
+                        <ul>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>PDF and Image Resume Processing</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Section Identification and Extraction</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Skills and Keyword Analysis</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Named Entity Recognition (People, Organizations, etc.)</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Top 5 Job Recommendations</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Role-Specific ATS Scoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

@@ -1,6 +1,10 @@
-# Resume AI - AI-Powered Career Assistant
+<div align="center">
+  <img src="https://raw.githubusercontent.com/yourusername/resumeai/main/static/images/logo.png" alt="Resume AI Logo" width="200"/>
+  
+  # Resume AI - AI-Powered Career Assistant
 
-*Accelerate your job search with AI-powered resume analysis, optimization, and job matching.*
+  *Accelerate your job search with AI-powered resume analysis, optimization, and job matching.*
+</div>
 
 ---
 

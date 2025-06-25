@@ -7,7 +7,6 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-.gunicorn
 .Python
 build/
 dist/
@@ -75,4 +74,5 @@ Thumbs.db
 package-lock.json
 uv.lock
 
-/attached_assets/
+# Exclude placeholder asset files
+attached_assets/*.csv

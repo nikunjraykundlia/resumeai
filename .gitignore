@@ -75,4 +75,4 @@ package-lock.json
 uv.lock
 
 # Exclude placeholder asset files
-attached_assets/*.csv
+# attached_assets/*.csv

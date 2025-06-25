@@ -1,0 +1,640 @@
+{% extends 'layout.html' %}
+
+{% block title %}Job Recommendations - ResumeAI{% endblock %}
+
+{% block current_page %}job_recommendations{% endblock %}
+
+{% block head %}
+<style>
+/* General Animation Classes */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes progressFill {
+    from { width: 0%; }
+    to { width: var(--target-width); }
+}
+
+@keyframes highlightBorder {
+    0% { box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--bs-primary-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0); }
+}
+
+/* Page Specific Animations */
+.resume-section-highlight {
+    animation: highlightBorder 2s ease-out;
+}
+
+.job-card {
+    transition: all 0.3s ease;
+    transform-origin: center;
+    animation: fadeIn 0.6s ease forwards, slideInUp 0.6s ease forwards;
+}
+
+.job-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+.job-card:nth-child(1) { animation-delay: 0.1s; }
+.job-card:nth-child(2) { animation-delay: 0.2s; }
+.job-card:nth-child(3) { animation-delay: 0.3s; }
+.job-card:nth-child(4) { animation-delay: 0.4s; }
+.job-card:nth-child(5) { animation-delay: 0.5s; }
+
+.progress-animated .progress-bar {
+    width: 0;
+    animation: progressFill 1s ease forwards;
+}
+
+.job-match-indicator {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: var(--bs-dark);
+    color: white;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-weight: bold;
+    font-size: 16px;
+    z-index: 10;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: 2px solid var(--bs-light);
+    transition: all 0.3s ease;
+}
+
+.job-card:hover .job-match-indicator {
+    transform: scale(1.1);
+    background: var(--bs-primary);
+}
+
+.btn-apply {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-apply:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255,255,255,0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-apply:hover:after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20);
+        opacity: 0;
+    }
+}
+
+.skill-tag {
+    display: inline-block;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    border-radius: 16px;
+    padding: 4px 12px;
+    margin: 0 4px 8px 0;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.skill-tag:hover {
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    transform: translateY(-2px);
+}
+
+.job-description {
+    max-height: 190px;
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.5s ease;
+}
+
+.job-description:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(to bottom, rgba(20, 25, 33, 0), rgba(20, 25, 33, 0.95));
+    pointer-events: none;
+}
+
+.job-card:hover .job-description {
+    max-height: 300px;
+}
+
+.job-match-details {
+    position: relative;
+    z-index: 5;
+    background: rgba(20, 25, 33, 0.7);
+    padding: 8px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    border-bottom: none;
+    padding: 15px 20px;
+}
+
+.job-details-badge {
+    transition: all 0.3s ease;
+}
+
+.job-details-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Section Animations */
+.animate-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease;
+}
+
+.animate-section.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Progress Steps -->
+    <div class="progress-indicator mb-5 animate-section show">
+        <div class="progress-step" data-step="home">
+            <div class="step-circle completed">
+                <i class="bi bi-check"></i>
+            </div>
+            <div class="step-label">Upload</div>
+        </div>
+        <div class="progress-step" data-step="analysis">
+            <div class="step-circle completed">
+                <i class="bi bi-check"></i>
+            </div>
+            <div class="step-label">Analysis</div>
+        </div>
+        <div class="progress-step" data-step="skills_test">
+            <div class="step-circle completed">
+                <i class="bi bi-check"></i>
+            </div>
+            <div class="step-label">Skills Test</div>
+        </div>
+        <div class="progress-step" data-step="job_recommendations">
+            <div class="step-circle active pulse">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="step-label">Job Matches</div>
+        </div>
+    </div>
+
+    <div class="row mb-5 animate-section show" style="animation-delay: 0.2s;">
+        <div class="col-lg-8">
+            <h2 class="mb-4">Job Recommendations for {{ candidate.name }}</h2>
+            <p class="lead">Based on your resume and skills assessment, we've found the following job matches for you.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end d-flex align-items-center justify-content-lg-end">
+            <a href="{{ url_for('skills_test') }}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Back to Skills Test
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="bi bi-house"></i> Home
+            </a>
+        </div>
+    </div>
+
+    <!-- Job Match Visualization -->
+    <div class="row mb-5 animate-section" id="job-market-section">
+        <div class="col-lg-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Job Market Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
+                            <div class="img-container text-center mb-4 mb-md-0">
+                                <img src="{{ url_for('static', filename='img/job-search.svg') }}" 
+                                    onerror="this.src='https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'; this.onerror=null;" 
+                                    alt="Job Searching" class="img-fluid rounded" style="max-width: 100%; max-height: 300px;">
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <h5 class="card-title">Your Job Market Fit</h5>
+                            <p class="mb-4">We've analyzed your resume against thousands of job listings to find your best matches. Here's how you compare to the market:</p>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Skill Coverage:</span>
+                                <span class="fw-bold">
+                                    {% if jobs|length > 2 %}
+                                    85%
+                                    {% elif jobs|length > 0 %}
+                                    70%
+                                    {% else %}
+                                    50%
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="progress mb-3 progress-animated">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                    style="--target-width: {% if jobs|length > 2 %}85%{% elif jobs|length > 0 %}70%{% else %}50%{% endif %}"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Experience Match:</span>
+                                <span class="fw-bold">
+                                    {% if jobs|length > 2 %}
+                                    78%
+                                    {% elif jobs|length > 0 %}
+                                    65%
+                                    {% else %}
+                                    45%
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="progress mb-3 progress-animated">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                    style="--target-width: {% if jobs|length > 2 %}78%{% elif jobs|length > 0 %}65%{% else %}45%{% endif %}"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Market Demand:</span>
+                                <span class="fw-bold">
+                                    {% if jobs|length > 2 %}
+                                    High
+                                    {% elif jobs|length > 0 %}
+                                    Medium
+                                    {% else %}
+                                    Low
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="progress mb-3 progress-animated">
+                                <div class="progress-bar bg-info" role="progressbar" 
+                                    style="--target-width: {% if jobs|length > 2 %}90%{% elif jobs|length > 0 %}60%{% else %}30%{% endif %}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Listings -->
+    <div class="row animate-section" id="job-listings-section">
+        <div class="col-12">
+            <h3 class="mb-4">Top Job Matches <span class="badge bg-primary pulse">{% if jobs|length >= 5 %}5{% else %}{{ jobs|length }}{% endif %}</span></h3>
+        </div>
+
+        {% if jobs|length > 0 %}
+            {% for job in jobs[:5] %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card job-card h-100 shadow position-relative" style="overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;">
+                        <div class="job-match-indicator" style="background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);">
+                            {{ job.match_score }}%
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">{{ job.title }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <i class="bi bi-building me-1"></i> {{ job.company }}
+                            </h6>
+                            
+                            <!-- Job Details -->
+                            <div class="mt-3 mb-3">
+                                {% if job.location %}
+                                <span class="badge bg-light text-dark me-2 job-details-badge">
+                                    <i class="bi bi-geo-alt"></i> {{ job.location }}
+                                </span>
+                                {% endif %}
+                                
+                                {% if job.salary_min and job.salary_min != "Not specified" %}
+                                <span class="badge bg-light text-dark me-2 job-details-badge">
+                                    <i class="bi bi-currency-dollar"></i> {{ job.salary_min }} - {{ job.salary_max }}
+                                </span>
+                                {% endif %}
+                                
+                                {% if job.created and job.created != "Unknown" %}
+                                <span class="badge bg-light text-dark job-details-badge">
+                                    <i class="bi bi-calendar3"></i> Posted: {{ job.created[:10] }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Skills Relevance (simulated) -->
+                            <div class="mb-3">
+                                <div class="skill-tags">
+                                    {% set skills = ['JavaScript', 'React', 'Python', 'SQL', 'AWS', 'UI/UX', 'Java', 'Node.js', 'Docker'] %}
+                                    {% for skill in skills[:3] %}
+                                        <span class="skill-tag">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <p class="card-text mt-3 job-description">{{ job.description }}</p>
+                            
+                            <div class="d-flex align-items-center mt-3 job-match-details">
+                                <div class="me-3">
+                                    <small class="text-muted">Match Score</small>
+                                    <div class="progress progress-animated" style="width: 100px; height: 8px;">
+                                        <div class="progress-bar {% if job.match_score >= 80 %}bg-success{% elif job.match_score >= 60 %}bg-primary{% elif job.match_score >= 40 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="--target-width: {{ job.match_score }}%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge {% if job.match_score >= 80 %}bg-success{% elif job.match_score >= 60 %}bg-primary{% elif job.match_score >= 40 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {% if job.match_score >= 80 %}
+                                            Excellent Match
+                                        {% elif job.match_score >= 60 %}
+                                            Good Match
+                                        {% elif job.match_score >= 40 %}
+                                            Average Match
+                                        {% else %}
+                                            Low Match
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent d-grid">
+                            <a href="javascript:void(0);" 
+                               onclick="applyWithAdzuna('{{ job.title|replace("'", "\\'") }}', '{{ job.location|replace("'", "\\'") }}', '{{ job.apply_url }}')" 
+                               class="btn btn-primary btn-apply">
+                                <i class="bi bi-briefcase me-2"></i> Apply Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    No job matches found. Try updating your resume with more skills and experience, or complete the skills assessment.
+                </div>
+                <div class="text-center py-4">
+                    <img src="{{ url_for('static', filename='img/empty-state.svg') }}" 
+                        onerror="this.src='https://images.unsplash.com/photo-1499750310107-5fef28a66643'; this.onerror=null;" 
+                        alt="Job Search" class="img-fluid rounded mb-4" style="max-height: 300px;">
+                    <p class="lead">Let's find you some job matches!</p>
+                    <div class="mt-3">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-upload me-2"></i> Upload a Different Resume
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Job Search Tips -->
+    <div class="row mt-5 animate-section" id="tips-section">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header" style="background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightbulb me-2 text-white"></i>
+                        <span class="text-dark">Job Search Tips</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% if job_search_tips %}
+                                <div class="ai-generated-content card-body bg-white rounded py-3 px-4 border-start border-primary border-3 shadow-sm">
+                                    <h5 class="mb-3 text-primary">Personalized Job Search Tips</h5>
+                                    <div class="job-search-tips-content text-dark">
+                                        {{ job_search_tips|markdown }}
+                                    </div>
+                                    <style>
+                                        .job-search-tips-content table {
+                                            width: 100%;
+                                            margin-bottom: 1rem;
+                                            color: #212529;
+                                            border-collapse: collapse;
+                                        }
+                                        .job-search-tips-content table th,
+                                        .job-search-tips-content table td {
+                                            padding: 0.75rem;
+                                            vertical-align: top;
+                                            border-top: 1px solid #dee2e6;
+                                            background-color: white;
+                                        }
+                                        .job-search-tips-content table thead th {
+                                            vertical-align: bottom;
+                                            border-bottom: 2px solid #dee2e6;
+                                            background-color: white;
+                                            color: #212529;
+                                        }
+                                        .job-search-tips-content table tbody tr:nth-of-type(odd) {
+                                            background-color: rgba(0, 0, 0, 0.02);
+                                        }
+                                    </style>
+
+                                </div>
+                            {% else %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="mb-3">Making the Most of Your Matches</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Customize your resume for each application using our ATS analysis</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Research each company before applying or interviewing</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Follow up after submitting applications (typically 1-2 weeks)</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Prepare specific examples that demonstrate your skills</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Consider job alerts to stay updated on new opportunities</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="mb-3">Improving Your Match Rate</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Complete skills assessments to verify your proficiency</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Update your resume with keywords from target job descriptions</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Add quantifiable achievements to your experience section</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Consider online courses to fill skill gaps</li>
+                                            <li class="list-group-item bg-transparent"><i class="bi bi-check2-circle text-success me-2"></i> Build a portfolio to showcase your work (especially for technical roles)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mt-5 animate-section" id="cta-section">
+        <div class="col-12 text-center">
+            <div class="card bg-dark border-0 shadow">
+                <div class="card-body py-5">
+                    <h3 class="card-title text-white">Want More Personalized Job Matches?</h3>
+                    <p class="card-text mb-4 text-white-50">Upload an updated resume or complete more skill assessments to refine your matches.</p>
+                    <div class="d-flex justify-content-center flex-wrap gap-3">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-upload me-2"></i> Upload New Resume
+                        </a>
+                        <a href="{{ url_for('skills_test') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check2-square me-2"></i> Retake Skills Test
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Function to apply with Adzuna and automatically fill search fields
+function applyWithAdzuna(jobTitle, location, originalUrl) {
+    // Store the search parameters in multiple ways to improve cross-domain compatibility
+    
+    // 1. localStorage (may not work cross-domain)
+    localStorage.setItem('adzuna_job_title', jobTitle);
+    localStorage.setItem('adzuna_job_location', location);
+    
+    // 2. Cookies (may work cross-domain with same root domain)
+    document.cookie = `adzuna_job_title=${encodeURIComponent(jobTitle)}; path=/; max-age=300; SameSite=None; Secure`;
+    document.cookie = `adzuna_job_location=${encodeURIComponent(location || '')}; path=/; max-age=300; SameSite=None; Secure`;
+    
+    // 3. Session storage as another backup
+    sessionStorage.setItem('adzuna_job_title', jobTitle);
+    sessionStorage.setItem('adzuna_job_location', location);
+    
+    // Always encode URL parameters
+    const encodedTitle = encodeURIComponent(jobTitle);
+    const encodedLocation = encodeURIComponent(location || '');
+    
+    // Determine the URL to open
+    let targetUrl;
+    
+    if (originalUrl && originalUrl.includes('adzuna.com')) {
+        // If we have a direct Adzuna URL, use it but add our parameters
+        targetUrl = originalUrl;
+        // Add parameters if they don't exist
+        if (!targetUrl.includes('?')) {
+            targetUrl += '?';
+        } else if (!targetUrl.endsWith('&') && !targetUrl.endsWith('?')) {
+            targetUrl += '&';
+        }
+        // Add our parameters
+        targetUrl += `q=${encodedTitle}&w=${encodedLocation}`;
+    } else {
+        // Otherwise construct a URL with direct search parameters
+        targetUrl = `https://www.adzuna.com/search?q=${encodedTitle}&w=${encodedLocation}`;
+    }
+    
+    // Show brief message to user
+    const message = `Opening Adzuna job search for "${jobTitle}"${location ? ` in ${location}` : ''}`;
+    alert(message);
+    
+    // Open in a new tab
+    window.open(targetUrl, '_blank');
+}
+
+// Animation for sections
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to check if element is in viewport
+    function isInViewport(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.bottom >= 0
+        );
+    }
+    
+    // Function to handle animation on scroll
+    function handleScrollAnimation() {
+        document.querySelectorAll('.animate-section:not(.show)').forEach(section => {
+            if (isInViewport(section)) {
+                section.classList.add('show');
+            }
+        });
+    }
+    
+    // Add pulse animation to step circles
+    document.querySelectorAll('.step-circle.active').forEach(circle => {
+        circle.style.animation = 'pulse 2s infinite';
+    });
+    
+    // Initialize animations
+    handleScrollAnimation();
+    
+    // Listen for scroll events
+    window.addEventListener('scroll', handleScrollAnimation);
+    
+    // Add resume section highlights animation
+    setTimeout(() => {
+        document.querySelectorAll('.progress-animated .progress-bar').forEach(bar => {
+            bar.style.width = bar.style.getPropertyValue('--target-width');
+        });
+    }, 500);
+    
+    // Calculate and display relevant skills for each job
+    function getRandomSkills(skills, count) {
+        return skills.sort(() => 0.5 - Math.random()).slice(0, count);
+    }
+    
+    // Function to add sample method to arrays if not exists
+    if (!Array.prototype.sample) {
+        Array.prototype.sample = function(count) {
+            const shuffled = [...this].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        };
+    }
+    
+    // Enhance job cards with hover effects
+    document.querySelectorAll('.job-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.classList.add('resume-section-highlight');
+        });
+    });
+});
+</script>
+{% endblock %}

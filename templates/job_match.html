@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+{% block title %}Job Match Results{% endblock %}
+
+{% block content %}
+<section class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Job Match Results</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h2 class="h5 mb-0">Similarity Scores</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3 class="h5 mb-3">Top Job Matches</h3>
+                            <div class="list-group">
+                                {% for job_title, score in top_matches %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ job_title }}</span>
+                                    <span class="badge bg-primary rounded-pill">{{ score|round(1) }}%</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="h5 mb-3">Key Skills Identified</h3>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for skill in skills_extracted %}
+                                <span class="badge bg-secondary">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">Recommended Jobs</h2>
+                    <span class="badge bg-success">{{ recommended_jobs|length }} jobs found</span>
+                </div>
+                <div class="card-body">
+                    {% if recommended_jobs %}
+                        {% for job in recommended_jobs %}
+                        <div class="job-item mb-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h3 class="h5 mb-0">{{ job.title }}</h3>
+                                <span class="text-muted">{{ job.company }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="badge bg-info me-2">{{ job.location }}</span>
+                                <span class="badge bg-secondary">{{ job.salary_display }}</span>
+                            </div>
+                            <p class="job-description">{{ job.description|truncate(200) }}</p>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Posted: {{ job.created }}</small>
+                                <a href="{{ job.url }}" target="_blank" class="btn btn-outline-primary btn-sm">View Job</a>
+                            </div>
+                            <hr>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            No jobs found matching your profile. Try adjusting the search parameters.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="/" class="btn btn-outline-secondary">Start New Analysis</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

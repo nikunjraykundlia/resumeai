@@ -1,0 +1,203 @@
+{% extends "layout.html" %}
+
+{% block title %}API Test - ATS Scoring{% endblock %}
+
+{% block content %}
+<section class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h2 class="h4 mb-0">ATS Score Calculator</h2>
+                </div>
+                <div class="card-body">
+                    <form id="ats-form">
+                        <div class="mb-3">
+                            <label for="resume-text" class="form-label fw-bold">Resume Text</label>
+                            <textarea 
+                                id="resume-text" 
+                                class="form-control" 
+                                rows="10" 
+                                required
+                                placeholder="Paste your resume text here..."
+                            ></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="job-description" class="form-label fw-bold">Job Description</label>
+                            <textarea 
+                                id="job-description" 
+                                class="form-control" 
+                                rows="6" 
+                                required
+                                placeholder="Paste the job description here..."
+                            ></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Calculate ATS Score</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-dark text-white d-flex align-items-center justify-content-between">
+                    <h2 class="h4 mb-0">Results</h2>
+                    <span id="ats-badge" class="badge bg-secondary">0.0%</span>
+                </div>
+                <div class="card-body">
+                    <div id="loading" class="text-center my-5 d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Analyzing...</p>
+                    </div>
+                    
+                    <div id="results-content">
+                        <div class="mb-4">
+                            <h3 class="h5">ATS Score</h3>
+                            <div class="progress mb-2">
+                                <div id="score-bar" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p class="small text-muted mb-0">ATS compatibility score based on keyword matching</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="h5">Extracted Skills</h3>
+                            <div id="skills-container" class="d-flex flex-wrap gap-2 mb-2">
+                                <span class="badge bg-secondary">No skills detected</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="h5">Keyword Matches</h3>
+                            <p id="keyword-stats" class="mb-2">0 matches out of 0 keywords</p>
+                            <div id="matched-keywords" class="d-flex flex-wrap gap-2 mb-2">
+                                <span class="badge bg-secondary">No matches</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('ats-form');
+    const resumeText = document.getElementById('resume-text');
+    const jobDescription = document.getElementById('job-description');
+    const atsBadge = document.getElementById('ats-badge');
+    const scoreBar = document.getElementById('score-bar');
+    const skillsContainer = document.getElementById('skills-container');
+    const keywordStats = document.getElementById('keyword-stats');
+    const matchedKeywords = document.getElementById('matched-keywords');
+    const loading = document.getElementById('loading');
+    const resultsContent = document.getElementById('results-content');
+    
+    // Pre-populate with sample data for testing
+    resumeText.value = `Experienced full stack developer with expertise in React, Node.js, and MongoDB.
+I have worked with RESTful APIs, Docker, and Git version control.
+Experience with AWS cloud services.`;
+
+    jobDescription.value = `We are looking for a Full Stack Developer experienced in React, Node.js, and MongoDB. 
+The candidate should also have working knowledge of RESTful APIs, Docker, Git, 
+and be familiar with cloud platforms like AWS.`;
+    
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        // Show loading
+        loading.classList.remove('d-none');
+        resultsContent.style.opacity = '0.3';
+        
+        try {
+            const response = await fetch('/api/ats-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    resume_text: resumeText.value,
+                    job_description: jobDescription.value
+                }),
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update UI with results
+                const score = data.score;
+                atsBadge.textContent = `${score}%`;
+                scoreBar.style.width = `${score}%`;
+                scoreBar.setAttribute('aria-valuenow', score);
+                
+                // Update class based on score
+                atsBadge.className = 'badge';
+                scoreBar.className = 'progress-bar';
+                if (score >= 80) {
+                    atsBadge.classList.add('bg-success');
+                    scoreBar.classList.add('bg-success');
+                } else if (score >= 60) {
+                    atsBadge.classList.add('bg-primary');
+                    scoreBar.classList.add('bg-primary');
+                } else if (score >= 40) {
+                    atsBadge.classList.add('bg-info');
+                    scoreBar.classList.add('bg-info');
+                } else if (score >= 20) {
+                    atsBadge.classList.add('bg-warning');
+                    scoreBar.classList.add('bg-warning');
+                } else {
+                    atsBadge.classList.add('bg-danger');
+                    scoreBar.classList.add('bg-danger');
+                }
+                
+                // Update skills
+                if (data.skills && data.skills.length > 0) {
+                    skillsContainer.innerHTML = '';
+                    data.skills.forEach(skill => {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-secondary';
+                        badge.textContent = skill;
+                        skillsContainer.appendChild(badge);
+                    });
+                } else {
+                    skillsContainer.innerHTML = '<span class="badge bg-secondary">No skills detected</span>';
+                }
+                
+                // Update keyword match stats
+                keywordStats.textContent = `${data.matched} matches out of ${data.total} keywords`;
+                
+                // Update matched keywords
+                if (data.matched_keywords && data.matched_keywords.length > 0) {
+                    matchedKeywords.innerHTML = '';
+                    data.matched_keywords.forEach(keyword => {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-success';
+                        badge.textContent = keyword;
+                        matchedKeywords.appendChild(badge);
+                    });
+                } else {
+                    matchedKeywords.innerHTML = '<span class="badge bg-secondary">No matches</span>';
+                }
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error calculating ATS score. Please try again.');
+        } finally {
+            // Hide loading
+            loading.classList.add('d-none');
+            resultsContent.style.opacity = '1';
+        }
+    });
+});
+</script>
+{% endblock %}

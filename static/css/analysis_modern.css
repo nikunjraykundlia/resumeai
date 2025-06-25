@@ -1,0 +1,39 @@
+/* Sleek minimal adjustments for /analyze page and general cards */
+body {
+  background: #f8f9fa;
+}
+.card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+.card-header {
+  border-radius: 1rem 1rem 0 0;
+}
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.animate-section {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.animate-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+.skill-tag,
+.entity-tag {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+}
+.badge {
+  font-size: 0.75rem;
+  padding: 0.45em 0.65em;
+}
+@media (min-width: 992px) {
+  .container.py-4 {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}

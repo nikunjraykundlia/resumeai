@@ -1,5 +1,6 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/yourusername/resumeai/main/static/images/logo.png" alt="Resume AI Logo" width="200"/>
+  <img src="https://github.com/user-attachments/assets/54027d97-7ce6-4ca2-832c-5643b7adc0ef" alt="Resume AI Logo" width="200"/>
+</div>
   
   # Resume AI - AI-Powered Career Assistant
 

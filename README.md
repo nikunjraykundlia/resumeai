@@ -1,8 +1,8 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/54027d97-7ce6-4ca2-832c-5643b7adc0ef" alt="Resume AI Logo" width="200"/>
 </div>
-  
-  # Resume AI - AI-Powered Career Assistant
+
+# Resume AI - AI-Powered Career Assistant
 
   *Accelerate your job search with AI-powered resume analysis, optimization, and job matching.*
 </div>
@@ -10,16 +10,16 @@
 ---
 
 ## Table of Contents
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [Technology Stack](#-technology-stack)
-- [Installation Guide](#-installation-guide)
-- [Configuration](#-configuration)
-- [Project Structure](#-project-structure)
-- [Deployment](#-deployment)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Contact](#-contact)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Installation Guide](#installation-guide)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 ---
 
